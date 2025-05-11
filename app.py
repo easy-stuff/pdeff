@@ -26,17 +26,10 @@ def merge_pdf():
             extension='.pdf'
         )
 
-        merger = PdfMerger()
-        for f in files:
-            merger.append(f)
-
-        output = io.BytesIO()
-        merger.write(output)
-        merger.close()
-        output.seek(0)
+        merged_pdf = utils.pdf.merge.merge_pdfs(files)
 
         return send_file(
-            output,
+            merged_pdf,
             as_attachment=True,
             download_name=final_name,
             mimetype='application/pdf'

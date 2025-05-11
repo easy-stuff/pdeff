@@ -1,5 +1,7 @@
 from flask import Flask
-from flask import render_template, request
+from flask import render_template, request, send_file
+from PyPDF2 import PdfMerger
+import io
 
 app = Flask(__name__)
 
@@ -15,10 +17,24 @@ def merge_pdf():
         return render_template("merge_pdf.html")
 
     elif request.method == 'POST':
-        # get the files
-        # store all the files in the order which im supposed to merge in a variable
-        # and also get the filename
-        ...
+        files = request.files.getlist('files')
+        filename = request.form.get('filename', 'merged')
+
+        merger = PdfMerger()
+        for f in files:
+            merger.append(f)
+
+        output = io.BytesIO()
+        merger.write(output)
+        merger.close()
+        output.seek(0)
+
+        return send_file(
+            output,
+            as_attachment=True,
+            download_name=f"{filename}.pdf",
+            mimetype='application/pdf'
+        )
 
 
 if __name__ == "__main__":

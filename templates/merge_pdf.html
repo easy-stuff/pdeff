@@ -46,13 +46,13 @@
                 </div>
                 <div class="p-6 gap-4">
                     <div class="text-gray-700">Filename:</div>
-                    <input type="text" placeholder="File Name" class="input" />
+                    <input type="text" placeholder="File Name" class="input" id="filenameInput" />
                 </div>
 
             </div>
 
             <div class="p-6">
-                <div class="btn btn-error btn-xl w-full text-white">
+                <div id="mergeBtn" class="btn btn-error btn-xl w-full text-white">
                     Merge
                     <i class="bi bi-arrow-right-circle"></i>
                 </div>
@@ -64,6 +64,10 @@
         const dropArea = document.getElementById('dropArea');
         const dropMessage = document.getElementById('dropMessage');
         const fileList = document.getElementById('fileList');
+        const mergeBtn = document.getElementById('mergeBtn');
+        const filenameInput = document.getElementById('filenameInput');
+
+        let currentFiles = [];
 
         // Drag over external files
         dropArea.addEventListener('dragover', (e) => {
@@ -106,6 +110,9 @@
     `;
                 item.setAttribute('data-name', file.name);
 
+                const index = currentFiles.push(file) - 1;
+                item.setAttribute('data-index', index);
+
                 const thumbContainer = document.createElement('div');
                 thumbContainer.className = 'relative w-full h-[80%] overflow-hidden';
 
@@ -140,6 +147,52 @@
                 ghostClass: 'bg-opacity-40',
             });
         }
+
+        function getSortedFiles() {
+            const sorted = [];
+            const items = fileList.querySelectorAll('.file-item');
+            items.forEach(item => {
+                const index = parseInt(item.getAttribute('data-index'));
+                sorted.push(currentFiles[index]);
+            });
+            return sorted;
+        }
+
+        mergeBtn.addEventListener('click', () => {
+            const filename = filenameInput.value.trim();
+            if (!filename) {
+                alert('Please enter a file name.');
+                return;
+            }
+
+            const sortedFiles = getSortedFiles();
+            if (sortedFiles.length === 0) {
+                alert('Please upload at least one PDF file.');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('filename', filename);
+
+            sortedFiles.forEach((file, i) => {
+                formData.append('files', file); // Same field name to send as a list
+            });
+
+            fetch('/merge_pdf', {
+                method: 'POST',
+                body: formData
+            })
+                .then(res => res.blob())
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${filename}.pdf`;
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                })
+                .catch(err => console.error('Merge failed:', err));
+        });
 
         function generateThumbnailAndPageCount(file, thumbImg, pageCountBadge) {
             const reader = new FileReader();

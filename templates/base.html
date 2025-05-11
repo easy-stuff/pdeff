@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>{% block title %}{% endblock %}</title>
+
+    <!-- Meta Tags -->
+    {% include "_components/meta.html" %}
+
+    <!-- Imported StyleSheets -->
+    {% include "_components/import_css.html" %}
+
+    <!-- Imported Javascript (that gets loaded before the document) -->
+    {% include "_components/import_js_before.html" %}
+
+    <!-- Other stuff under the head -->
+    {% block head %}{% endblock %}
+
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    {% include "_components/navbar.html" %}
+
+    <div class="container mx-auto py-8">
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Page Footer -->
+    {% include "_components/footer.html" %}
+
+    <!-- Imported Javascript (that gets loaded before after document) -->
+    {% include "_components/import_js_after.html" %}
+
+</body>
+
+</html>

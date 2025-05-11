@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+
+<style>
+    .dragover {
+        border-color: #4CAF50;
+        background-color: #e8f5e9;
+    }
+
+    .file-item {
+        transition: transform 0.2s ease;
+    }
+
+    .file-item:hover {
+        transform: scale(1.05);
+    }
+</style>
+
+{% endblock %}
+
+{% block content %}
+
+<div class="bg-base-200 p-0 min-h-screen">
+
+    <div class="flex h-full">
+
+        <!-- Drag and Drop Area -->
+        <div id="dropArea" class="flex-1 p-6 border-2 border-dashed border-primary rounded-lg bg-base-100">
+            <div id="dropMessage" class="text-center text-primary-content text-lg font-semibold">
+                Drag and drop files here
+            </div>
+            <div id="fileList" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mt-4"></div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="w-72 ml-6 p-6 bg-base-200 rounded-lg h-full flex flex-col justify-between">
+            <h3 class="text-xl font-semibold mb-4">Sidebar Title</h3>
+            <div id="sidebarContent">
+                <!-- Sidebar content here -->
+            </div>
+            <button class="btn btn-primary w-full mt-4">Sidebar Button</button>
+        </div>
+
+    </div>
+
+    <script>
+        const dropArea = document.getElementById('dropArea');
+        const dropMessage = document.getElementById('dropMessage');
+        const fileList = document.getElementById('fileList');
+
+        // Drag over external files
+        dropArea.addEventListener('dragover', (e) => {
+            if (e.dataTransfer.types.includes('Files')) {
+                e.preventDefault();
+            }
+        });
+
+        // Only highlight when files are from outside
+        dropArea.addEventListener('dragenter', (e) => {
+            if (e.dataTransfer.types.includes('Files')) {
+                dropArea.classList.add('dragover');
+            }
+        });
+
+        dropArea.addEventListener('dragleave', () => {
+            dropArea.classList.remove('dragover');
+        });
+
+        dropArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropArea.classList.remove('dragover');
+
+            const files = Array.from(e.dataTransfer.files);
+            updateFileList(files);
+        });
+
+        function updateFileList(files) {
+            if (files.length > 0) {
+                dropMessage.classList.add('hidden');
+            }
+
+            files.forEach(file => {
+                if (file.type !== 'application/pdf') return;
+
+                const item = document.createElement('div');
+                item.className = 'file-item p-4 bg-base-100 border border-base-300 rounded text-center text-sm relative';
+                item.setAttribute('data-name', file.name);
+
+                const thumbContainer = document.createElement('div');
+                thumbContainer.className = 'relative';
+
+                const thumbImg = document.createElement('img');
+                thumbImg.className = 'w-full h-32 object-cover rounded';
+                thumbContainer.appendChild(thumbImg);
+
+                const pageCountBadge = document.createElement('span');
+                pageCountBadge.className = 'absolute top-2 right-2 bg-primary text-white text-xs px-2 py-1 rounded';
+                thumbContainer.appendChild(pageCountBadge);
+
+                item.appendChild(thumbContainer);
+                item.appendChild(document.createTextNode(file.name));
+                fileList.appendChild(item);
+
+                generateThumbnailAndPageCount(file, thumbImg, pageCountBadge);
+            });
+
+            initializeSortable();
+        }
+
+        function initializeSortable() {
+            new Sortable(fileList, {
+                animation: 300,
+                easing: "cubic-bezier(0.25, 1, 0.5, 1)",
+                ghostClass: 'bg-opacity-40',
+            });
+        }
+
+        function generateThumbnailAndPageCount(file, thumbImg, pageCountBadge) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const pdfData = new Uint8Array(e.target.result);
+                pdfjsLib.getDocument(pdfData).promise.then(pdfDoc => {
+                    pdfDoc.getPage(1).then(page => {
+                        const scale = 0.2;
+                        const viewport = page.getViewport({ scale });
+                        const canvas = document.createElement('canvas');
+                        const context = canvas.getContext('2d');
+                        canvas.width = viewport.width;
+                        canvas.height = viewport.height;
+                        page.render({ canvasContext: context, viewport }).promise.then(() => {
+                            thumbImg.src = canvas.toDataURL();
+                        });
+                    });
+                    pageCountBadge.textContent = `${pdfDoc.numPages} pages`;
+                });
+            };
+            reader.readAsArrayBuffer(file);
+        }
+    </script>
+
+</div>
+
+{% endblock %}

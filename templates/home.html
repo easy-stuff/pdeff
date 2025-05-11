@@ -2,30 +2,33 @@
 
 {% block content %}
 
-<!-- Topic -->
-<div class="text-center">
-    <div class="text-5xl font-bold">
-        Tired of crappy PDF tools?
-    </div>
-    <div class="text-lg pt-7">
-        A completely offline set of easy-to-use PDF manipulation tools to easily merge, split, <br>
-        compress, convert, rotate, unlock and watermark PDFs with just a few clicks.
-    </div>
-</div>
-
-<!-- Grid -->
-<div class="grid grid-cols-3 md:grid-cols-6">
-
-    <div>
-        <div class="card bg-base-100 w-72 shadow-lg hover:cursor-pointer" onclick="window.location.href = '/merge_pdf'">
-            <div class="card-body">
-                <img src="{{ url_for('static', filename='images/merge_pdf.svg') }}" alt="MergePDF" class="w-16">
-                <h2 class="card-title">Merge PDF</h2>
-                <p>Combine PDFs in the order you want with the easiest PDF merger available.</p>
-            </div>
+<div class="container mx-auto py-8">
+    <!-- Topic -->
+    <div class="text-center">
+        <div class="text-5xl font-bold">
+            Tired of crappy PDF tools?
+        </div>
+        <div class="text-lg pt-7">
+            A completely offline set of easy-to-use PDF manipulation tools to easily merge, split, <br>
+            compress, convert, rotate, unlock and watermark PDFs with just a few clicks.
         </div>
     </div>
 
+    <!-- Grid -->
+    <div class="grid grid-cols-3 md:grid-cols-6">
+
+        <div>
+            <div class="card bg-base-100 w-72 shadow-lg hover:cursor-pointer"
+                onclick="window.location.href = '/merge_pdf'">
+                <div class="card-body">
+                    <img src="{{ url_for('static', filename='images/merge_pdf.svg') }}" alt="MergePDF" class="w-16">
+                    <h2 class="card-title">Merge PDF</h2>
+                    <p>Combine PDFs in the order you want with the easiest PDF merger available.</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
 </div>
 
 

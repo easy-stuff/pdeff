@@ -29,7 +29,7 @@
             <div id="dropMessage" class="text-center text-primary-content text-lg font-semibold">
                 Drag and drop files here
             </div>
-            <div id="fileList" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mt-4"></div>
+            <div id="fileList" class="flex flex-wrap gap-4 mt-4 justify-start"></div>
         </div>
 
         <!-- Sidebar -->
@@ -44,7 +44,7 @@
                 </div>
                 <div class="p-6 gap-4">
                     <div class="text-gray-700">Filename:</div>
-                    <input type="text" placeholder="Type here" class="input" />
+                    <input type="text" placeholder="File Name" class="input" />
                 </div>
 
             </div>
@@ -52,6 +52,7 @@
             <div class="p-6">
                 <div class="btn btn-error btn-xl w-full text-white">
                     Merge
+                    <i class="bi bi-arrow-right-circle"></i>
                 </div>
             </div>
         </div>
@@ -97,26 +98,35 @@
                 if (file.type !== 'application/pdf') return;
 
                 const item = document.createElement('div');
-                item.className = 'file-item p-4 bg-base-100 border border-base-300 rounded text-center text-sm relative h-100 w-80';
+                item.className = `
+        file-item w-[160px] aspect-square bg-base-100 border border-base-300 rounded 
+        text-center text-sm flex flex-col justify-between overflow-hidden shadow-md
+    `;
                 item.setAttribute('data-name', file.name);
 
                 const thumbContainer = document.createElement('div');
-                thumbContainer.className = 'relative';
+                thumbContainer.className = 'relative w-full h-[80%] overflow-hidden';
 
                 const thumbImg = document.createElement('img');
-                thumbImg.className = 'w-full h-32 object-cover rounded';
+                thumbImg.className = 'w-full h-full object-cover';
                 thumbContainer.appendChild(thumbImg);
 
                 const pageCountBadge = document.createElement('span');
-                pageCountBadge.className = 'absolute top-2 right-2 bg-primary text-white text-xs px-2 py-1 rounded';
+                pageCountBadge.className = 'absolute top-1 right-1 bg-primary text-white text-xs px-2 py-1 rounded';
                 thumbContainer.appendChild(pageCountBadge);
 
+                const shortName = file.name.length > 10 ? file.name.slice(0, 10) + '...' : file.name;
+                const fileName = document.createElement('div');
+                fileName.textContent = shortName;
+                fileName.className = 'px-2 py-1 truncate h-[20%] flex items-center justify-center';
+
                 item.appendChild(thumbContainer);
-                item.appendChild(document.createTextNode(file.name));
+                item.appendChild(fileName);
                 fileList.appendChild(item);
 
                 generateThumbnailAndPageCount(file, thumbImg, pageCountBadge);
             });
+
 
             initializeSortable();
         }

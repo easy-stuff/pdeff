@@ -19,7 +19,12 @@
                 </details>
             </li>
             <li><a class="uppercase">Compress PDF</a></li>
-            <li><a class="uppercase">Split PDF</a></li>
+            <li>
+                <a href="{{ url_for('split_pdf') }}"
+                    class="uppercase {% if request.path == '/split_pdf' %}text-red-700 font-bold{% endif %}">
+                    Split PDF
+                </a>
+            </li>
             <li>
                 <a href="{{ url_for('merge_pdf') }}"
                     class="uppercase {% if request.path == '/merge_pdf' %}text-red-700 font-bold{% endif %}">

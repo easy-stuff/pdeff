@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+
+{% block title %}
+Split PDF
+{% endblock %}
+
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+<style>
+    .dragover {
+        border-color: #4CAF50;
+        background-color: #e8f5e9;
+    }
+
+    .file-item {
+        transition: transform 0.2s ease;
+    }
+
+    .file-item:hover {
+        transform: scale(1.05);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="bg-base-200 p-0 h-[calc(100vh-5rem)] overflow-hidden">
+    <div class="flex h-full">
+        <!-- Drag and Drop Area -->
+        <div id="dropArea" class="flex-1 p-6 overflow-y-auto">
+            <div id="dropMessage"
+                class="flex items-center justify-center h-[calc(100vh-10rem)] border-4 border-dotted border-gray-400">
+                <div class="text-center text-6xl font-semibold text-gray-600 p-20">
+                    Drag and drop files here
+                </div>
+            </div>
+            <div id="fileList" class="flex flex-wrap gap-4 mt-4 justify-start"></div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="w-96 ml-0 bg-base-100 flex flex-col justify-between shadow-xl">
+            <div>
+                <h3 class="text-xl font-semibold mb-4 text-center">Split PDF</h3>
+                <hr class="border-t border-gray-400">
+                <div class="p-6">
+                    <div class="bg-blue-200 p-5">
+                        All uploaded PDFs will be split into pages and returned as a .zip archive.
+                    </div>
+                </div>
+                <div class="p-6 gap-4">
+                    <div class="text-gray-700">Filename:</div>
+                    <input type="text" placeholder="File Name" class="input" id="filenameInput" />
+                </div>
+
+            </div>
+
+            <div class="p-6">
+                <div id="mergeBtn" class="btn btn-error btn-xl w-full text-white">
+                    Merge
+                    <i class="bi bi-arrow-right-circle"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const dropArea = document.getElementById('dropArea');
+        const dropMessage = document.getElementById('dropMessage');
+        const fileList = document.getElementById('fileList');
+        const mergeBtn = document.getElementById('mergeBtn');
+        const filenameInput = document.getElementById('filenameInput');
+
+        let currentFiles = [];
+
+        // Drag over external files
+        dropArea.addEventListener('dragover', (e) => {
+            if (e.dataTransfer.types.includes('Files')) {
+                e.preventDefault();
+            }
+        });
+
+        // Only highlight when files are from outside
+        dropArea.addEventListener('dragenter', (e) => {
+            if (e.dataTransfer.types.includes('Files')) {
+                dropArea.classList.add('dragover');
+            }
+        });
+
+        dropArea.addEventListener('dragleave', () => {
+            dropArea.classList.remove('dragover');
+        });
+
+        dropArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropArea.classList.remove('dragover');
+
+            const files = Array.from(e.dataTransfer.files);
+            updateFileList(files);
+        });
+
+        function updateFileList(files) {
+            if (files.length > 0) {
+                dropMessage.classList.add('hidden');
+            }
+
+            files.forEach(file => {
+                if (file.type !== 'application/pdf') return;
+
+                const item = document.createElement('div');
+                item.className = `
+        file-item w-[240px] aspect-square bg-base-100 border border-base-300 rounded 
+        text-center text-sm flex flex-col justify-between overflow-hidden shadow-md
+    `;
+                item.setAttribute('data-name', file.name);
+
+                const index = currentFiles.push(file) - 1;
+                item.setAttribute('data-index', index);
+
+                const thumbContainer = document.createElement('div');
+                thumbContainer.className = 'relative w-full h-[80%] overflow-hidden';
+
+                const thumbImg = document.createElement('img');
+                thumbImg.className = 'w-full h-full object-cover';
+                thumbContainer.appendChild(thumbImg);
+
+                const pageCountBadge = document.createElement('span');
+                pageCountBadge.className = 'absolute top-1 right-1 bg-primary text-white text-xs px-2 py-1 rounded';
+                thumbContainer.appendChild(pageCountBadge);
+
+                const shortName = file.name.length > 24 ? file.name.slice(0, 24) + '...' : file.name;
+                const fileName = document.createElement('div');
+                fileName.textContent = shortName;
+                fileName.className = 'px-2 py-1 truncate h-[20%] flex items-center justify-center';
+
+                item.appendChild(thumbContainer);
+                item.appendChild(fileName);
+                fileList.appendChild(item);
+
+                generateThumbnailAndPageCount(file, thumbImg, pageCountBadge);
+            });
+
+            if (currentFiles.length > 0) {
+                const filenameInput = document.getElementById('filenameInput');
+                const firstFileBase = currentFiles[0].name.replace(/\.pdf$/i, '');
+                filenameInput.value = `${firstFileBase}_merged`;
+            }
+
+            initializeSortable();
+        }
+
+        function initializeSortable() {
+            new Sortable(fileList, {
+                animation: 300,
+                easing: "cubic-bezier(0.25, 1, 0.5, 1)",
+                ghostClass: 'bg-opacity-40',
+            });
+        }
+
+        function getSortedFiles() {
+            const sorted = [];
+            const items = fileList.querySelectorAll('.file-item');
+            items.forEach(item => {
+                const index = parseInt(item.getAttribute('data-index'));
+                sorted.push(currentFiles[index]);
+            });
+            return sorted;
+        }
+
+        mergeBtn.addEventListener('click', () => {
+            const filename = filenameInput.value.trim();
+            if (!filename) {
+                alert('Please enter a file name.');
+                return;
+            }
+
+            const sortedFiles = getSortedFiles();
+            if (sortedFiles.length === 0) {
+                alert('Please upload at least one PDF file.');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('filename', filename);
+
+            sortedFiles.forEach((file, i) => {
+                formData.append('files', file); // Same field name to send as a list
+            });
+
+            fetch('/merge_pdf', {
+                method: 'POST',
+                body: formData
+            })
+                .then(res => res.blob())
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${filename}.pdf`;
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                })
+                .catch(err => console.error('Merge failed:', err));
+        });
+
+        function generateThumbnailAndPageCount(file, thumbImg, pageCountBadge) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const pdfData = new Uint8Array(e.target.result);
+                pdfjsLib.getDocument(pdfData).promise.then(pdfDoc => {
+                    pdfDoc.getPage(1).then(page => {
+                        const scale = 0.2;
+                        const viewport = page.getViewport({ scale });
+                        const canvas = document.createElement('canvas');
+                        const context = canvas.getContext('2d');
+                        canvas.width = viewport.width;
+                        canvas.height = viewport.height;
+                        page.render({ canvasContext: context, viewport }).promise.then(() => {
+                            thumbImg.src = canvas.toDataURL();
+                        });
+                    });
+                    pageCountBadge.textContent = `${pdfDoc.numPages} pages`;
+                });
+            };
+            reader.readAsArrayBuffer(file);
+        }
+    </script>
+
+</div>
+
+{% endblock %}

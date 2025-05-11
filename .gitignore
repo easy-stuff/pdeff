@@ -172,3 +172,11 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# Project Files
+# -------------
+tetsing/
+*.pdf
+work/
+*.png
+*.jpg

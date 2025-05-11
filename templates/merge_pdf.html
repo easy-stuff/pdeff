@@ -99,7 +99,7 @@
 
                 const item = document.createElement('div');
                 item.className = `
-        file-item w-[160px] aspect-square bg-base-100 border border-base-300 rounded 
+        file-item w-[240px] aspect-square bg-base-100 border border-base-300 rounded 
         text-center text-sm flex flex-col justify-between overflow-hidden shadow-md
     `;
                 item.setAttribute('data-name', file.name);
@@ -115,7 +115,7 @@
                 pageCountBadge.className = 'absolute top-1 right-1 bg-primary text-white text-xs px-2 py-1 rounded';
                 thumbContainer.appendChild(pageCountBadge);
 
-                const shortName = file.name.length > 10 ? file.name.slice(0, 10) + '...' : file.name;
+                const shortName = file.name.length > 24 ? file.name.slice(0, 24) + '...' : file.name;
                 const fileName = document.createElement('div');
                 fileName.textContent = shortName;
                 fileName.className = 'px-2 py-1 truncate h-[20%] flex items-center justify-center';

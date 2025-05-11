@@ -2,6 +2,7 @@ from flask import Flask
 from flask import render_template, request, send_file
 from PyPDF2 import PdfMerger
 import io
+import utils
 
 app = Flask(__name__)
 
@@ -20,6 +21,11 @@ def merge_pdf():
         files = request.files.getlist('files')
         filename = request.form.get('filename', 'merged')
 
+        final_name = utils.files.sanitize_filename(
+            filename=filename,
+            extension='.pdf'
+        )
+
         merger = PdfMerger()
         for f in files:
             merger.append(f)
@@ -32,7 +38,7 @@ def merge_pdf():
         return send_file(
             output,
             as_attachment=True,
-            download_name=f"{filename}.pdf",
+            download_name=final_name,
             mimetype='application/pdf'
         )
 

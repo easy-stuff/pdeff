@@ -136,6 +136,11 @@
                 generateThumbnailAndPageCount(file, thumbImg, pageCountBadge);
             });
 
+            if (currentFiles.length > 0) {
+                const filenameInput = document.getElementById('filenameInput');
+                const firstFileBase = currentFiles[0].name.replace(/\.pdf$/i, '');
+                filenameInput.value = `${firstFileBase}_merged`;
+            }
 
             initializeSortable();
         }

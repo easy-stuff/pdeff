@@ -178,5 +178,3 @@ cython_debug/
 tetsing/
 *.pdf
 work/
-*.png
-*.jpg

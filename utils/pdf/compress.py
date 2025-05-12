@@ -26,11 +26,16 @@ def compress_pdf(files: list, compression_level: t.Literal['low', 'medium', 'hig
             with open(original_path, 'wb') as f:
                 f.write(file.read())
 
+            # Ghostscript command with better compression control
             cmd = [
-                'gswin64',
+                'gswin64',  # Or 'gs' on Linux/macOS
                 '-sDEVICE=pdfwrite',
                 '-dCompatibilityLevel=1.4',
                 f'-dPDFSETTINGS={gs_quality}',
+                '-dDownsampleColorImages=true',
+                '-dColorImageResolution=100' if compression_level == 'medium' else '-dColorImageResolution=72',
+                '-dGrayImageResolution=100' if compression_level == 'medium' else '-dGrayImageResolution=72',
+                '-dMonoImageResolution=150',
                 '-dNOPAUSE',
                 '-dQUIET',
                 '-dBATCH',

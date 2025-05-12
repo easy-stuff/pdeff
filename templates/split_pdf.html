@@ -49,8 +49,8 @@ Split PDF
                     </div>
                 </div>
                 <div class="p-6 gap-4">
-                    <div class="text-gray-700">Filename:</div>
-                    <input type="text" placeholder="File Name" class="input" id="filenameInput" />
+                    <div class="text-gray-700">Stepping:</div>
+                    <input type="text" placeholder="Splitting Step" value="1" class="input" id="steppingInput" />
                 </div>
 
             </div>
@@ -69,7 +69,7 @@ Split PDF
         const dropMessage = document.getElementById('dropMessage');
         const fileList = document.getElementById('fileList');
         const mergeBtn = document.getElementById('mergeBtn');
-        const filenameInput = document.getElementById('filenameInput');
+        const steppingInput = document.getElementById('steppingInput');
 
         let currentFiles = [];
 
@@ -140,12 +140,6 @@ Split PDF
                 generateThumbnailAndPageCount(file, thumbImg, pageCountBadge);
             });
 
-            if (currentFiles.length > 0) {
-                const filenameInput = document.getElementById('filenameInput');
-                const firstFileBase = currentFiles[0].name.replace(/\.pdf$/i, '');
-                filenameInput.value = `${firstFileBase}_merged`;
-            }
-
             initializeSortable();
         }
 
@@ -168,7 +162,7 @@ Split PDF
         }
 
         mergeBtn.addEventListener('click', () => {
-            const filename = filenameInput.value.trim();
+            const filename = steppingInput.value.trim();
             if (!filename) {
                 alert('Please enter a file name.');
                 return;

@@ -1,7 +1,5 @@
 from flask import Flask
 from flask import render_template, request, send_file
-from PyPDF2 import PdfMerger
-import io
 import utils
 
 app = Flask(__name__)
@@ -26,7 +24,7 @@ def merge_pdf():
             extension='.pdf'
         )
 
-        merged_pdf = utils.pdf.merge.merge_pdfs(files)
+        merged_pdf = utils.pdf.merge.merge_pdfs(files=files)
 
         return send_file(
             merged_pdf,
@@ -43,21 +41,23 @@ def split_pdf():
 
     elif request.method == 'POST':
         files = request.files.getlist('files')
-        filename = request.form.get('filename', 'merged')
+        stepping = int(request.form.get('stepping', 1))
 
         final_name = utils.files.sanitize_filename(
-            filename=filename,
-            extension='.pdf'
+            filename=f"{len(files)}_pdeff_split",
+            extension='.zip'
         )
 
-        # TODO: Change this!
-        merged_pdf = utils.pdf.merge.merge_pdfs(files)
+        splitted_pdf = utils.pdf.split.split_pdf(
+            files=files,
+            stepping=stepping
+        )
 
         return send_file(
-            merged_pdf,
+            splitted_pdf,
             as_attachment=True,
             download_name=final_name,
-            mimetype='application/pdf'
+            mimetype='application/zip'
         )
 
 

@@ -57,7 +57,7 @@ Split PDF
 
             <div class="p-6">
                 <div id="mergeBtn" class="btn btn-error btn-xl w-full text-white">
-                    Merge
+                    Split
                     <i class="bi bi-arrow-right-circle"></i>
                 </div>
             </div>
@@ -187,13 +187,13 @@ Split PDF
             }
 
             const formData = new FormData();
-            formData.append('filename', filename);
+            formData.append('stepping', filename);
 
             sortedFiles.forEach((file, i) => {
                 formData.append('files', file); // Same field name to send as a list
             });
 
-            fetch('/merge_pdf', {
+            fetch('/split_pdf', {
                 method: 'POST',
                 body: formData
             })
@@ -202,7 +202,7 @@ Split PDF
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
-                    a.download = `${filename}.pdf`;
+                    a.download = `${filename}.zip`;
                     a.click();
                     window.URL.revokeObjectURL(url);
                 })

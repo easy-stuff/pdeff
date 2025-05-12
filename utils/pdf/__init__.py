@@ -1,1 +1,1 @@
-from . import merge
+from . import merge, split

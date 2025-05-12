@@ -205,16 +205,30 @@ Merge PDF
                 method: 'POST',
                 body: formData
             })
-                .then(res => res.blob())
-                .then(blob => {
+                .then(res => {
+                    const disposition = res.headers.get('Content-Disposition');
+                    let filename = 'download.zip'; // fallback
+
+                    if (disposition && disposition.includes('filename=')) {
+                        const match = disposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+                        if (match && match[1]) {
+                            filename = match[1].replace(/['"]/g, '');
+                        }
+                    }
+
+                    return res.blob().then(blob => ({ blob, filename }));
+                })
+                .then(({ blob, filename }) => {
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
-                    a.download = `${filename}.pdf`;
+                    a.download = filename;
+                    document.body.appendChild(a);
                     a.click();
+                    a.remove();
                     window.URL.revokeObjectURL(url);
                 })
-                .catch(err => console.error('Merge failed:', err));
+                .catch(err => console.error('Split failed:', err));
         });
 
         function generateThumbnailAndPageCount(file, thumbImg, pageCountBadge) {

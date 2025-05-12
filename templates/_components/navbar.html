@@ -18,7 +18,12 @@
                     </ul>
                 </details>
             </li>
-            <li><a class="uppercase">Compress PDF</a></li>
+            <li>
+                <a href="{{ url_for('compress_pdf') }}"
+                    class="uppercase {% if request.path == '/compress_pdf' %}text-red-700 font-bold{% endif %}">
+                    Compress PDF
+                </a>
+            </li>
             <li>
                 <a href="{{ url_for('split_pdf') }}"
                     class="uppercase {% if request.path == '/split_pdf' %}text-red-700 font-bold{% endif %}">

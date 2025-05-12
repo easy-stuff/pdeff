@@ -107,14 +107,13 @@ Split PDF
             files.forEach(file => {
                 if (file.type !== 'application/pdf') return;
 
+                const index = currentFiles.push(file) - 1;
+
                 const item = document.createElement('div');
                 item.className = `
-        file-item w-[240px] aspect-square bg-base-100 border border-base-300 rounded 
-        text-center text-sm flex flex-col justify-between overflow-hidden shadow-md
-    `;
-                item.setAttribute('data-name', file.name);
-
-                const index = currentFiles.push(file) - 1;
+            file-item w-[240px] aspect-square bg-base-100 border border-base-300 rounded 
+            text-center text-sm flex flex-col justify-between overflow-hidden shadow-md relative
+        `;
                 item.setAttribute('data-index', index);
 
                 const thumbContainer = document.createElement('div');
@@ -127,6 +126,18 @@ Split PDF
                 const pageCountBadge = document.createElement('span');
                 pageCountBadge.className = 'absolute top-1 right-1 bg-primary text-white text-xs px-2 py-1 rounded';
                 thumbContainer.appendChild(pageCountBadge);
+
+                // Trash button
+                const trashBtn = document.createElement('button');
+                trashBtn.innerHTML = '<i class="bi bi-trash"></i>';
+                trashBtn.className = 'absolute top-1 left-1 bg-red-600 text-white text-sm p-1 rounded hover:bg-red-700';
+                trashBtn.title = 'Remove file';
+                trashBtn.onclick = () => {
+                    const itemIndex = parseInt(item.getAttribute('data-index'));
+                    currentFiles[itemIndex] = null;  // Mark as null
+                    item.remove(); // Remove from DOM
+                };
+                thumbContainer.appendChild(trashBtn);
 
                 const shortName = file.name.length > 24 ? file.name.slice(0, 24) + '...' : file.name;
                 const fileName = document.createElement('div');
@@ -156,7 +167,8 @@ Split PDF
             const items = fileList.querySelectorAll('.file-item');
             items.forEach(item => {
                 const index = parseInt(item.getAttribute('data-index'));
-                sorted.push(currentFiles[index]);
+                const file = currentFiles[index];
+                if (file) sorted.push(file); // Skip removed files
             });
             return sorted;
         }

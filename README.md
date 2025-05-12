@@ -40,3 +40,17 @@ To-do:
 - PDF to PDF/A ??? (not sure about this)
 - OCR PDF
 - Make the web libraries work completely offiline
+
+### Showcase
+
+Home page:
+![alt text](showcase/image.png)
+
+Merge PDF page:
+![alt text](showcase/image-1.png)
+
+Split PDF page:
+![alt text](showcase/image-3.png)
+
+Compress PDF page:
+![alt text](showcase/image-2.png)

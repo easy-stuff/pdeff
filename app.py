@@ -61,5 +61,11 @@ def split_pdf():
         )
 
 
+@app.route("/compress_pdf", methods=['GET', 'POST'])
+def compress_pdf():
+    if request.method == 'GET':
+        return render_template("compress_pdf.html")
+
+
 if __name__ == "__main__":
     app.run("0.0.0.0", port=8080, debug=True)

@@ -47,14 +47,40 @@ Compress PDF
                 <!-- TODO: Update this from https://www.ilovepdf.com/compress_pdf -->
                 <div class="p-6">
                     <div class="bg-blue-200 p-5">
-                        All uploaded PDFs will be split into pages and returned as a .zip archive.
+                        All uploaded PDFs will be compressed and returned as a .zip archive.
                         The order doesn't matter here.
                     </div>
                 </div>
-                <div class="p-6 gap-4">
-                    <div class="text-gray-700">Stepping:</div>
-                    <input type="text" placeholder="Splitting Step" value="1" class="input" id="steppingInput" />
+                <div class="px-6 pt-1 space-y-4">
+                    <div class="text-gray-700 font-semibold">Compression Level:</div>
+
+                    <label class="flex items-start gap-4 cursor-pointer">
+                        <input type="radio" name="compression" value="extreme" class="radio radio-sm mt-1" />
+                        <div>
+                            <div class="font-medium">Extreme Compression</div>
+                            <div class="text-sm text-gray-500">Less quality, high compression</div>
+                        </div>
+                    </label>
+
+                    <label class="flex items-start gap-4 cursor-pointer">
+                        <input type="radio" name="compression" value="recommended" class="radio radio-sm mt-1"
+                            checked />
+                        <div>
+                            <div class="font-medium">Recommended Compression</div>
+                            <div class="text-sm text-gray-500">Good quality, good compression</div>
+                        </div>
+                    </label>
+
+                    <label class="flex items-start gap-4 cursor-pointer">
+                        <input type="radio" name="compression" value="low" class="radio radio-sm mt-1" />
+                        <div>
+                            <div class="font-medium">Less Compression</div>
+                            <div class="text-sm text-gray-500">High quality, less compression</div>
+                        </div>
+                    </label>
                 </div>
+
+
 
             </div>
 

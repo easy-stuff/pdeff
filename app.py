@@ -1,3 +1,4 @@
+import typing as t
 from flask import Flask
 from flask import render_template, request, send_file
 import utils
@@ -65,6 +66,27 @@ def split_pdf():
 def compress_pdf():
     if request.method == 'GET':
         return render_template("compress_pdf.html")
+
+    elif request.method == 'POST':
+        files = request.files.getlist('files')
+        compression_level = request.form.get('compression_level', 'low')
+
+        final_name = utils.files.sanitize_filename(
+            filename=f"{len(files)}_compressed",
+            extension='.zip'
+        )
+
+        compressed_pdf = utils.pdf.compress.compress_pdf(
+            files=files,
+            compression_level=compression_level,
+        )
+
+        return send_file(
+            compressed_pdf,
+            as_attachment=True,
+            download_name=final_name,
+            mimetype='application/zip'
+        )
 
 
 if __name__ == "__main__":

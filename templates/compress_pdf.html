@@ -44,7 +44,6 @@ Compress PDF
                 <h3 class="text-xl font-semibold mb-4 text-center">Compress PDF</h3>
                 <hr class="border-t border-gray-400">
 
-                <!-- TODO: Update this from https://www.ilovepdf.com/compress_pdf -->
                 <div class="p-6">
                     <div class="bg-blue-200 p-5">
                         All uploaded PDFs will be compressed and returned as a .zip archive.
@@ -55,7 +54,7 @@ Compress PDF
                     <div class="text-gray-700 font-semibold">Compression Level:</div>
 
                     <label class="flex items-start gap-4 cursor-pointer">
-                        <input type="radio" name="compression" value="extreme" class="radio radio-sm mt-1" />
+                        <input type="radio" name="compression_level" value="high" class="radio radio-sm mt-1" />
                         <div>
                             <div class="font-medium">Extreme Compression</div>
                             <div class="text-sm text-gray-500">Less quality, high compression</div>
@@ -63,7 +62,7 @@ Compress PDF
                     </label>
 
                     <label class="flex items-start gap-4 cursor-pointer">
-                        <input type="radio" name="compression" value="recommended" class="radio radio-sm mt-1"
+                        <input type="radio" name="compression_level" value="medium" class="radio radio-sm mt-1"
                             checked />
                         <div>
                             <div class="font-medium">Recommended Compression</div>
@@ -72,15 +71,13 @@ Compress PDF
                     </label>
 
                     <label class="flex items-start gap-4 cursor-pointer">
-                        <input type="radio" name="compression" value="low" class="radio radio-sm mt-1" />
+                        <input type="radio" name="compression_level" value="low" class="radio radio-sm mt-1" />
                         <div>
                             <div class="font-medium">Less Compression</div>
                             <div class="text-sm text-gray-500">High quality, less compression</div>
                         </div>
                     </label>
                 </div>
-
-
 
             </div>
 
@@ -98,7 +95,7 @@ Compress PDF
         const dropMessage = document.getElementById('dropMessage');
         const fileList = document.getElementById('fileList');
         const mergeBtn = document.getElementById('mergeBtn');
-        const steppingInput = document.getElementById('steppingInput');
+        const compression_level = document.querySelector('input[name="compression_level"]:checked');
 
         let currentFiles = [];
 
@@ -203,9 +200,9 @@ Compress PDF
         }
 
         mergeBtn.addEventListener('click', () => {
-            const stepping = steppingInput.value.trim();
-            if (!stepping) {
-                alert('Please enter a file name.');
+            const compression_level_value = compression_level.value.trim();
+            if (!compression_level_value) {
+                alert('Please select a compression level.');
                 return;
             }
 
@@ -216,13 +213,13 @@ Compress PDF
             }
 
             const formData = new FormData();
-            formData.append('stepping', stepping);
+            formData.append('compression_level', compression_level_value);
 
             sortedFiles.forEach((file, i) => {
                 formData.append('files', file); // Same field name to send as a list
             });
 
-            fetch('/split_pdf', {
+            fetch('/compress_pdf', {
                 method: 'POST',
                 body: formData
             })

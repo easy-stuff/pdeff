@@ -46,6 +46,7 @@ Split PDF
                 <div class="p-6">
                     <div class="bg-blue-200 p-5">
                         All uploaded PDFs will be split into pages and returned as a .zip archive.
+                        The order doesn't matter here.
                     </div>
                 </div>
                 <div class="p-6 gap-4">
@@ -174,8 +175,8 @@ Split PDF
         }
 
         mergeBtn.addEventListener('click', () => {
-            const filename = steppingInput.value.trim();
-            if (!filename) {
+            const stepping = steppingInput.value.trim();
+            if (!stepping) {
                 alert('Please enter a file name.');
                 return;
             }
@@ -187,7 +188,7 @@ Split PDF
             }
 
             const formData = new FormData();
-            formData.append('stepping', filename);
+            formData.append('stepping', stepping);
 
             sortedFiles.forEach((file, i) => {
                 formData.append('files', file); // Same field name to send as a list
@@ -197,16 +198,31 @@ Split PDF
                 method: 'POST',
                 body: formData
             })
-                .then(res => res.blob())
-                .then(blob => {
+                .then(res => {
+                    const disposition = res.headers.get('Content-Disposition');
+                    let filename = 'download.zip'; // fallback
+
+                    if (disposition && disposition.includes('filename=')) {
+                        const match = disposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+                        if (match && match[1]) {
+                            filename = match[1].replace(/['"]/g, '');
+                        }
+                    }
+
+                    return res.blob().then(blob => ({ blob, filename }));
+                })
+                .then(({ blob, filename }) => {
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
-                    a.download = `${filename}.zip`;
+                    a.download = filename;
+                    document.body.appendChild(a);
                     a.click();
+                    a.remove();
                     window.URL.revokeObjectURL(url);
                 })
-                .catch(err => console.error('Merge failed:', err));
+                .catch(err => console.error('Split failed:', err));
+
         });
 
         function generateThumbnailAndPageCount(file, thumbImg, pageCountBadge) {

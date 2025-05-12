@@ -1,1 +1,1 @@
-from . import merge, split
+from . import merge, split, compress

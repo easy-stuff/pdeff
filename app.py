@@ -131,8 +131,4 @@ def compress_pdf():
 
 if __name__ == "__main__":
     logger.info("Starting the Flask app in debug mode")
-
-    if os.environ.get('WERKZEUG_RUN_MAIN') == 'true' or not app.debug:
-        utils.banners.welcome()
-
     app.run("0.0.0.0", port=8080, debug=True)

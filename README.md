@@ -24,7 +24,7 @@ Features:
 
 - **Merge PDFs** :- Works! Based on PyPdf2
 - **Split PDFs** :- Works! Based on PyPdf2
-- **Compress PDFs** :- BROKEN! might even increase the file size a little bit. Built using ghostscript.
+- **Compress PDFs** :- BROKEN! might even increase the file size a little bit. Built using ghostscript. I might remove this completely unless I figure out how to make it work.
 
 To-do:
 

@@ -1,9 +1,26 @@
 import io
 import zipfile
+import logging
 from PyPDF2 import PdfReader, PdfWriter
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 
 def split_pdf(files: list, stepping: int) -> io.BytesIO:
+    """
+    Splits a list of PDF files into smaller PDFs, each containing a specified number of pages.
+
+    Args:
+        files (list): A list of file-like objects to PDF files.
+        stepping (int): The number of pages per split PDF.
+
+    Returns:
+        io.BytesIO: A BytesIO stream containing the split PDFs in a ZIP archive.
+
+    Raises:
+        Exception: For general split or zip failures.
+    """
     zip_buffer = io.BytesIO()
 
     with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
@@ -13,13 +30,14 @@ def split_pdf(files: list, stepping: int) -> io.BytesIO:
 
             try:
                 reader = PdfReader(file)
+                logger.debug(f"Successfully read PDF {file.filename}.")
             except Exception as e:
-                print(f"Error reading PDF {file.filename}: {e}")
+                logger.error(f"Error reading PDF {file.filename}: {e}")
                 continue  # Skip unreadable files
 
             total_pages = len(reader.pages)
             if total_pages == 0:
-                print(f"Skipping empty PDF: {file.filename}")
+                logger.warning(f"Skipping empty PDF: {file.filename}")
                 continue
 
             base_name = getattr(
@@ -38,7 +56,13 @@ def split_pdf(files: list, stepping: int) -> io.BytesIO:
                 part_name = f"{base_name}_p{i+1}_to_p{min(i+stepping, total_pages)}.pdf"
 
                 # Add to zip
-                zip_file.writestr(part_name, output_pdf.read())
+                try:
+                    zip_file.writestr(part_name, output_pdf.read())
+                    logger.debug(f"Added part {part_name} to ZIP.")
+                except Exception as e:
+                    logger.error(f"Failed to add {part_name} to ZIP: {e}")
+                    continue
 
     zip_buffer.seek(0)
+    logger.debug("PDF split complete, returning ZIP buffer.")
     return zip_buffer

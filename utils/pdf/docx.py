@@ -12,6 +12,8 @@ from pdf2image import convert_from_path
 from PIL import Image
 import pytesseract
 import fitz  # PyMuPDF
+import win32com.client
+import pythoncom 
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -143,7 +145,7 @@ def to_docx_ocr(files: list) -> io.BytesIO:
     return zip_buffer
 
 def to_pdf(files: list) -> io.BytesIO:
-    logger.debug("Starting DOCX to PDF conversion")
+    logger.debug("Starting DOC/DOCX to PDF conversion")
 
     zip_buffer = io.BytesIO()
 
@@ -155,27 +157,37 @@ def to_pdf(files: list) -> io.BytesIO:
                     base_name = os.path.splitext(filename)[0]
                     logger.debug(f"Processing file: {filename}")
 
-                    # Save uploaded DOCX to temporary path
-                    docx_path = os.path.join(tmpdir, filename)
+                    input_path = os.path.join(tmpdir, filename)
                     file.seek(0)
-                    with open(docx_path, 'wb') as f:
+                    with open(input_path, 'wb') as f:
                         f.write(file.read())
-                    logger.debug(f"Saved DOCX to: {docx_path}")
+                    logger.debug(f"Saved input to: {input_path}")
 
-                    # Convert DOCX to PDF
-                    convert(docx_path, tmpdir)
-                    pdf_path = os.path.join(tmpdir, base_name + ".pdf")
+                    output_path = os.path.join(tmpdir, base_name + ".pdf")
 
-                    if not os.path.exists(pdf_path):
+                    pythoncom.CoInitialize()
+                    try:
+                        word = win32com.client.Dispatch("Word.Application")
+                        word.Visible = False
+                        wdFormatPDF = 17
+
+                        doc = word.Documents.Open(str(input_path))
+                        doc.SaveAs(str(output_path), FileFormat=wdFormatPDF)
+                        doc.Close(False)
+                        word.Quit()
+                        logger.debug(f"Converted to PDF: {output_path}")
+                    finally:
+                        pythoncom.CoUninitialize()
+
+                    if not os.path.exists(output_path):
                         raise FileNotFoundError(f"PDF not created for {filename}")
 
-                    # Add converted PDF to zip
-                    with open(pdf_path, 'rb') as pdf_file:
+                    with open(output_path, 'rb') as pdf_file:
                         zip_file.writestr(base_name + ".pdf", pdf_file.read())
-                        logger.debug(f"Added PDF to ZIP: {base_name}.pdf")
+                        logger.debug(f"Added {base_name}.pdf to ZIP")
 
                 except Exception as e:
-                    logger.exception(f"Error converting {filename}: {e}")
+                    logger.exception(f"Error handling {filename}: {e}")
 
     zip_buffer.seek(0)
     logger.debug("Returning zipped PDF files as BytesIO")

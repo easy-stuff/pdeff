@@ -102,7 +102,13 @@ Word to PDF
 
             files.forEach(file => {
                 const ext = file.name.split('.').pop().toLowerCase();
-                if (ext !== 'doc' && ext !== 'docx') {
+                if ((ext !== 'doc') && ext !== 'docx') {
+                    return;
+                }
+
+                const isDOCX = file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+                const isDOC = file.type === 'application/msword';
+                if (!(isDOC || isDOCX)) {
                     return;
                 }
 
@@ -181,7 +187,7 @@ Word to PDF
                 formData.append('files', file); // Same field name to send as a list
             });
 
-            fetch('/merge_pdf', {
+            fetch('/from_docx', {
                 method: 'POST',
                 body: formData
             })

@@ -84,7 +84,6 @@ def to_docx_no_ocr(files: list) -> io.BytesIO:
     logger.debug("Returning zipped DOCX files as BytesIO")
     return zip_buffer
 
-
 def to_docx_ocr(files: list) -> io.BytesIO:
     logger.debug("Starting OCR-based PDF to DOCX conversion with page size adjustment")
 
@@ -124,8 +123,7 @@ def to_docx_ocr(files: list) -> io.BytesIO:
                         text = pytesseract.image_to_string(image)
                         doc.add_paragraph(text)
 
-                        logger.debug(
-                            f"OCR done for page {i + 1}, size {width}x{height}px")
+                        logger.debug(f"OCR done for page {i + 1}, size {width}x{height}px")
 
                     # Save to docx
                     docx_filename = f"{base_name}_ocr.docx"

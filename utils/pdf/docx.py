@@ -1,21 +1,15 @@
 import io
-import os
-import zipfile
-import tempfile
 import logging
+import os
+import tempfile
+import zipfile
 
+from docx import Document
+from docx.shared import Inches, Pt
+from pdf2docx import Converter
 from pdf2image import convert_from_path
 from PIL import Image
 import pytesseract
-from docx import Document
-from docx.shared import Inches, Pt
-
-import io
-import os
-import zipfile
-import tempfile
-import logging
-from pdf2docx import Converter
 import fitz  # PyMuPDF
 
 logging.basicConfig(level=logging.DEBUG)

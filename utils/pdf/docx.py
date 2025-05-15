@@ -6,6 +6,7 @@ import zipfile
 
 from docx import Document
 from docx.shared import Inches, Pt
+from docx2pdf import convert
 from pdf2docx import Converter
 from pdf2image import convert_from_path
 from PIL import Image
@@ -139,4 +140,43 @@ def to_docx_ocr(files: list) -> io.BytesIO:
 
     zip_buffer.seek(0)
     logger.debug("Returning final ZIP file")
+    return zip_buffer
+
+def to_pdf(files: list) -> io.BytesIO:
+    logger.debug("Starting DOCX to PDF conversion")
+
+    zip_buffer = io.BytesIO()
+
+    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            for index, file in enumerate(files):
+                try:
+                    filename = getattr(file, 'filename', f'file_{index}.docx')
+                    base_name = os.path.splitext(filename)[0]
+                    logger.debug(f"Processing file: {filename}")
+
+                    # Save uploaded DOCX to temporary path
+                    docx_path = os.path.join(tmpdir, filename)
+                    file.seek(0)
+                    with open(docx_path, 'wb') as f:
+                        f.write(file.read())
+                    logger.debug(f"Saved DOCX to: {docx_path}")
+
+                    # Convert DOCX to PDF
+                    convert(docx_path, tmpdir)
+                    pdf_path = os.path.join(tmpdir, base_name + ".pdf")
+
+                    if not os.path.exists(pdf_path):
+                        raise FileNotFoundError(f"PDF not created for {filename}")
+
+                    # Add converted PDF to zip
+                    with open(pdf_path, 'rb') as pdf_file:
+                        zip_file.writestr(base_name + ".pdf", pdf_file.read())
+                        logger.debug(f"Added PDF to ZIP: {base_name}.pdf")
+
+                except Exception as e:
+                    logger.exception(f"Error converting {filename}: {e}")
+
+    zip_buffer.seek(0)
+    logger.debug("Returning zipped PDF files as BytesIO")
     return zip_buffer

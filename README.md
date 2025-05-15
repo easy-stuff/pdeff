@@ -41,6 +41,13 @@ To-do:
 - OCR PDF
 - Make the web libraries work completely offiline
 
+Dependencies (will complete this section properly later):
+
+- Ghostscript and add it to PATH `C:\Program Files\gs\gs10.05.1\bin`
+- tesseract and add it to PATH `C:\Program Files\Tesseract-OCR`
+- add `C:\Users\hirusha\AppData\Roaming\Python\Python313\Scripts` to PATH
+- Poppler and add it to PATH `C:\Software\poppler-24.08.0\Library\bin`
+
 ### Showcase
 
 Home page:

@@ -179,10 +179,8 @@ def from_docx():
     elif request.method == 'POST':
         logger.debug("Processing compress PDF request")
         files = request.files.getlist('files')
-        compression_level = request.form.get('compression_level', 'low')
 
         logger.debug(f"Received files: {len(files)}")
-        logger.debug(f"Compression level: {compression_level}")
 
         final_name = utils.files.sanitize_filename(
             filename=f"{len(files)}_from_docx_to_pdf",
@@ -191,9 +189,8 @@ def from_docx():
         logger.debug(f"Sanitized filename: {final_name}")
 
         try:
-            compressed_pdf = utils.pdf.compress.compress_pdf(
+            compressed_pdf = utils.pdf.docx.to_pdf(
                 files=files,
-                compression_level=compression_level,
             )
             logger.debug(f"Successfully compressed {len(files)} PDF(s)")
         except Exception as e:

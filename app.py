@@ -129,6 +129,44 @@ def compress_pdf():
         )
 
 
+@app.route("/to_docx", methods=['GET', 'POST'])
+def to_docx():
+    if request.method == 'GET':
+        logger.debug("Rendering to DOCX page")
+        return render_template("to_docx.html")
+
+    elif request.method == 'POST':
+        logger.debug("Processing to DOCX request")
+        files = request.files.getlist('files')
+        use_ocr = request.form.get('use_ocr', 'yes')
+
+        logger.debug(f"Received files: {len(files)}")
+        logger.debug(f"OCR Use: {use_ocr}")
+
+        final_name = utils.files.sanitize_filename(
+            filename=f"{len(files)}_to_docx",
+            extension='.zip'
+        )
+        logger.debug(f"Sanitized filename: {final_name}")
+
+        try:
+            converted_docx = utils.pdf.compress.compress_pdf(
+                files=files,
+                compression_level=use_ocr,
+            )
+            logger.debug(f"Successfully converted {len(files)} PDF(s)")
+        except Exception as e:
+            logger.error(f"Error converting PDFs: {e}")
+            return "Error converting PDFs", 500
+
+        return send_file(
+            converted_docx,
+            as_attachment=True,
+            download_name=final_name,
+            mimetype='application/zip'
+        )
+
+
 if __name__ == "__main__":
     logger.info("Starting the Flask app in debug mode")
     app.run("0.0.0.0", port=8080, debug=True)

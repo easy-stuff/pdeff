@@ -25,11 +25,11 @@ Features:
 - **Merge PDFs** :- Works! Based on PyPdf2
 - **Split PDFs** :- Works! Based on PyPdf2
 - **Compress PDFs** :- BROKEN! might even increase the file size a little bit. Built using ghostscript. I might remove this completely unless I figure out how to make it work.
+- **PDF to Word** :- Works! with and without OCR (though this is slightly buggy). The normal version is based on pdf2docx and the OCR version is based on pytesseract+tesseract and docx.
+- **Word to PDF** :- Works! Based on pywin32 and Microsoft Word.
 
 To-do:
 
-- PDF to Word
-- Word to PDF
 - PDF to JPG
 - JPG to PDF
 - Watermark (already done)

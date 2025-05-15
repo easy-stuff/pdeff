@@ -150,10 +150,14 @@ def to_docx():
         logger.debug(f"Sanitized filename: {final_name}")
 
         try:
-            converted_docx = utils.pdf.compress.compress_pdf(
-                files=files,
-                compression_level=use_ocr,
-            )
+            if use_ocr == 'no':
+                converted_docx = utils.pdf.docx.to_docx_no_ocr(
+                    files=files,
+                )
+            else:
+                converted_docx = utils.pdf.docx.to_docx_ocr(
+                    files=files,
+                )
             logger.debug(f"Successfully converted {len(files)} PDF(s)")
         except Exception as e:
             logger.error(f"Error converting PDFs: {e}")

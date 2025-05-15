@@ -214,7 +214,7 @@ Compress PDF
                 formData.append('files', file); // Same field name to send as a list
             });
 
-            fetch('/compress_pdf', {
+            fetch('/to_docx', {
                 method: 'POST',
                 body: formData
             })

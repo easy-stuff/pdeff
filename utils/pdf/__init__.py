@@ -1,1 +1,1 @@
-from . import merge, split, compress
+from . import merge, split, compress, docx

@@ -195,8 +195,8 @@ Compress PDF
         }
 
         mergeBtn.addEventListener('click', () => {
-            const compression_level_value = use_ocr.value.trim();
-            if (!compression_level_value) {
+            const use_ocr_value = use_ocr.value.trim();
+            if (!use_ocr_value) {
                 alert('Please select a OCR type.');
                 return;
             }
@@ -207,8 +207,10 @@ Compress PDF
                 return;
             }
 
+            console.log(use_ocr_value);
+
             const formData = new FormData();
-            formData.append('compression_level', compression_level_value);
+            formData.append('use_ocr', use_ocr_value);
 
             sortedFiles.forEach((file, i) => {
                 formData.append('files', file); // Same field name to send as a list

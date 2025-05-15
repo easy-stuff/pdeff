@@ -138,7 +138,7 @@ def to_docx():
     elif request.method == 'POST':
         logger.debug("Processing to DOCX request")
         files = request.files.getlist('files')
-        use_ocr = request.form.get('use_ocr', 'yes')
+        use_ocr = request.form.get('use_ocr', 'no')
 
         logger.debug(f"Received files: {len(files)}")
         logger.debug(f"OCR Use: {use_ocr}")
@@ -150,6 +150,7 @@ def to_docx():
         logger.debug(f"Sanitized filename: {final_name}")
 
         try:
+            print('use_ocr')
             if use_ocr == 'no':
                 converted_docx = utils.pdf.docx.to_docx_no_ocr(
                     files=files,

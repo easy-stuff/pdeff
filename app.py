@@ -150,7 +150,6 @@ def to_docx():
         logger.debug(f"Sanitized filename: {final_name}")
 
         try:
-            print('use_ocr')
             if use_ocr == 'no':
                 converted_docx = utils.pdf.docx.to_docx_no_ocr(
                     files=files,
@@ -171,6 +170,42 @@ def to_docx():
             mimetype='application/zip'
         )
 
+@app.route("/from_docx", methods=['GET', 'POST'])
+def from_docx():
+    if request.method == 'GET':
+        logger.debug("Rendering compress PDF page")
+        return render_template("from_docx.html")
+
+    elif request.method == 'POST':
+        logger.debug("Processing compress PDF request")
+        files = request.files.getlist('files')
+        compression_level = request.form.get('compression_level', 'low')
+
+        logger.debug(f"Received files: {len(files)}")
+        logger.debug(f"Compression level: {compression_level}")
+
+        final_name = utils.files.sanitize_filename(
+            filename=f"{len(files)}_from_docx_to_pdf",
+            extension='.zip'
+        )
+        logger.debug(f"Sanitized filename: {final_name}")
+
+        try:
+            compressed_pdf = utils.pdf.compress.compress_pdf(
+                files=files,
+                compression_level=compression_level,
+            )
+            logger.debug(f"Successfully compressed {len(files)} PDF(s)")
+        except Exception as e:
+            logger.error(f"Error compressing PDFs: {e}")
+            return "Error compressing PDFs", 500
+
+        return send_file(
+            compressed_pdf,
+            as_attachment=True,
+            download_name=final_name,
+            mimetype='application/zip'
+        )
 
 if __name__ == "__main__":
     logger.info("Starting the Flask app in debug mode")

@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+
+{% block title %}
+Word to PDF
+{% endblock %}
+
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+<style>
+    .dragover {
+        border-color: #4CAF50;
+        background-color: #e8f5e9;
+    }
+
+    .file-item {
+        transition: transform 0.2s ease;
+    }
+
+    .file-item:hover {
+        transform: scale(1.05);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="bg-base-200 p-0 h-[calc(100vh-5rem)] overflow-hidden">
+    <div class="flex h-full">
+        <!-- Drag and Drop Area -->
+        <div id="dropArea" class="flex-1 p-6 overflow-y-auto">
+            <div id="dropMessage"
+                class="flex items-center justify-center h-[calc(100vh-10rem)] border-4 border-dotted border-gray-400">
+                <div class="text-center text-6xl font-semibold text-gray-600 p-20">
+                    Drag and drop files here
+                </div>
+            </div>
+            <div id="fileList" class="flex flex-wrap gap-4 mt-4 justify-start"></div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="w-96 ml-0 bg-base-100 flex flex-col justify-between shadow-xl">
+            <div>
+                <h3 class="text-xl font-semibold mb-4 text-center">Word to PDF</h3>
+                <hr class="border-t border-gray-400">
+                <div class="p-6">
+                    <div class="bg-blue-200 p-5">
+                        All uploaded Word files will be converted and returned as a .zip archive.
+                        The order doesn't matter here.
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="p-6">
+                <div id="mergeBtn" class="btn btn-error btn-xl w-full text-white">
+                    Convert to PDF
+                    <i class="bi bi-arrow-right-circle"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const dropArea = document.getElementById('dropArea');
+        const dropMessage = document.getElementById('dropMessage');
+        const fileList = document.getElementById('fileList');
+        const mergeBtn = document.getElementById('mergeBtn');
+
+        let currentFiles = [];
+
+        // Drag over external files
+        dropArea.addEventListener('dragover', (e) => {
+            if (e.dataTransfer.types.includes('Files')) {
+                e.preventDefault();
+            }
+        });
+
+        // Only highlight when files are from outside
+        dropArea.addEventListener('dragenter', (e) => {
+            if (e.dataTransfer.types.includes('Files')) {
+                dropArea.classList.add('dragover');
+            }
+        });
+
+        dropArea.addEventListener('dragleave', () => {
+            dropArea.classList.remove('dragover');
+        });
+
+        dropArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropArea.classList.remove('dragover');
+
+            const files = Array.from(e.dataTransfer.files);
+            updateFileList(files);
+        });
+
+        function updateFileList(files) {
+            if (files.length > 0) {
+                dropMessage.classList.add('hidden');
+            }
+
+            files.forEach(file => {
+                const ext = file.name.split('.').pop().toLowerCase();
+                if (ext !== 'doc' && ext !== 'docx') {
+                    return;
+                }
+
+                const index = currentFiles.push(file) - 1;
+
+                const item = document.createElement('div');
+                item.className = `
+        file-item w-[240px] aspect-square bg-base-100 border border-base-300 rounded 
+        text-center text-sm flex flex-col justify-between overflow-hidden shadow-md relative
+        `;
+                item.setAttribute('data-index', index);
+
+                const thumbContainer = document.createElement('div');
+                thumbContainer.className = 'relative w-full h-[80%] overflow-hidden flex items-center justify-center';
+
+                // Placeholder image
+                const thumbImg = document.createElement('img');
+                thumbImg.className = 'w-16 h-16 opacity-40';
+                thumbImg.src = '/static/images/filetype-word.png'; 
+                thumbContainer.appendChild(thumbImg);
+
+                // Trash button
+                const trashBtn = document.createElement('button');
+                trashBtn.innerHTML = '<i class="bi bi-trash"></i>';
+                trashBtn.className = 'absolute top-1 left-1 bg-red-600 text-white text-sm p-1 rounded hover:bg-red-700';
+                trashBtn.title = 'Remove file';
+                trashBtn.onclick = () => {
+                    const itemIndex = parseInt(item.getAttribute('data-index'));
+                    currentFiles[itemIndex] = null;
+                    item.remove();
+                };
+                thumbContainer.appendChild(trashBtn);
+
+                const shortName = file.name.length > 24 ? file.name.slice(0, 24) + '...' : file.name;
+                const fileName = document.createElement('div');
+                fileName.textContent = shortName;
+                fileName.className = 'px-2 py-1 truncate h-[20%] flex items-center justify-center';
+
+                item.appendChild(thumbContainer);
+                item.appendChild(fileName);
+                fileList.appendChild(item);
+            });
+
+            initializeSortable();
+        }
+
+        function initializeSortable() {
+            new Sortable(fileList, {
+                animation: 300,
+                easing: "cubic-bezier(0.25, 1, 0.5, 1)",
+                ghostClass: 'bg-opacity-40',
+            });
+        }
+
+        function getSortedFiles() {
+            const sorted = [];
+            const items = fileList.querySelectorAll('.file-item');
+            items.forEach(item => {
+                const index = parseInt(item.getAttribute('data-index'));
+                const file = currentFiles[index];
+                if (file) sorted.push(file); // Skip removed files
+            });
+            return sorted;
+        }
+
+        mergeBtn.addEventListener('click', () => {
+            const sortedFiles = getSortedFiles();
+            if (sortedFiles.length === 0) {
+                alert('Please upload at least one PDF file.');
+                return;
+            }
+
+            const formData = new FormData();
+
+            sortedFiles.forEach((file, i) => {
+                formData.append('files', file); // Same field name to send as a list
+            });
+
+            fetch('/merge_pdf', {
+                method: 'POST',
+                body: formData
+            })
+                .then(res => {
+                    const disposition = res.headers.get('Content-Disposition');
+                    let filename = 'download.zip'; // fallback
+
+                    if (disposition && disposition.includes('filename=')) {
+                        const match = disposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+                        if (match && match[1]) {
+                            filename = match[1].replace(/['"]/g, '');
+                        }
+                    }
+
+                    return res.blob().then(blob => ({ blob, filename }));
+                })
+                .then(({ blob, filename }) => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    window.URL.revokeObjectURL(url);
+                })
+                .catch(err => console.error('Split failed:', err));
+        });
+
+
+    </script>
+
+</div>
+
+{% endblock %}
